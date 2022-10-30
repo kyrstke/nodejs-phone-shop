@@ -1,0 +1,21 @@
+<header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+  <a href="/" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none">
+      <h1>Phone store</h1>
+  </a>
+
+  <div class="nav col-12 col-md-auto mb-2 justify-content-right mb-md-0">
+      <a href="/" class="nav-link px-2 link-dark">Home</a>
+      <a href="/checkout" class="nav-link px-2 link-dark">
+        Checkout
+        <span class="badge bg-primary rounded-pill" style="margin-left: 3px">
+        <% if(cart.totalQty) { %>
+          <%=cart.totalQty %>
+        <% } else { %>
+          <%=0 %>
+        <% } %>
+      </span>
+      </a>
+      
+    </div>
+
+</header>

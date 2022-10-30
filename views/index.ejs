@@ -1,0 +1,36 @@
+<% if(message) { %>
+  <div style="text-align: center" class="alert alert-<%=message.type %>">
+    <strong><%= message.intro %></strong>
+    <span><%= message.message %></span>
+    <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<% if(message2) { %>
+  <div style="text-align: center" class="alert alert-<%=message2.type %>">
+    <strong><%= message2.intro %></strong>
+    <span><%= message2.message %></span>
+    <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+  <% if(phones != '') { %>
+    <% phones.forEach(function(phone, index) { %>
+      <div class="col">
+        <div class="card shadow-sm">
+          <img src="img/<%- phone.image %>" alt="<%- phone.name %>" loading="lazy">
+          <div class="card-body">
+            <p class="card-text"><%- phone.name %></p>
+            <div class="d-flex justify-content-between align-items-center">
+              <form action="/add-to-cart" method="POST">
+                <input type="hidden" name="id" value="<%=phone.id %>">
+                <button class="btn btn-sm btn-outline-dark">Add to cart</button>
+              </form>
+              <small class="text-dark"><%- phone.price %> zł</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
