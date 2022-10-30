@@ -1,4 +1,4 @@
-# A simple phone shop made with Node.js, Express.js, JSX and Bootstrap.
+# Node.js Phone Shop
 
 ## Setup
 
