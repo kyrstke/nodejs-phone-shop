@@ -1,5 +1,17 @@
 # Node.js Phone Shop
 
+A simple phone shop made with Node.js, Express.js, JSX and Bootstrap. The app uses sessions to store the cart. The app is deployed on Heroku and uses MongoDB Atlas as a database.
+
+## Appearance
+
+### Home page
+
+![image](public/img/home_page.png)
+
+### Checkout
+
+![image](public/img/checkout.png)
+
 ## Setup
 
 ### `npm install`
@@ -26,10 +38,3 @@ You may also see any lint errors in the console.
 - add user authentication and authorization
 - add admin panel
 - don't refresh the page when adding a phone to the cart
-
-
-## Appearance
-
-![image](public/img/home_page.png)
-
-![image](public/img/checkout.png)
