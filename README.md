@@ -31,3 +31,5 @@ You may also see any lint errors in the console.
 ## Appearance
 
 ![image](public/img/home_page.png)
+
+![image](public/img/checkout.png)
