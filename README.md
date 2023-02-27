@@ -1,6 +1,6 @@
 # Node.js Phone Shop
 
-A simple phone shop made with Node.js, Express.js, JSX and Bootstrap. The app uses sessions to store the cart. The app is deployed on Heroku and uses MongoDB Atlas as a database.
+A simple phone shop made with Node.js, Express.js, JSX and Bootstrap. The app uses MongoDB Atlas as a database and sessions to store the cart.
 
 ## Appearance
 
