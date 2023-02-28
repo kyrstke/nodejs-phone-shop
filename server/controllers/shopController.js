@@ -271,5 +271,5 @@ async function deletePhoneData(){
 }
 
 // deletePhoneData();
-insertPhoneData();
-// makePhoneDataAvailable();
+// insertPhoneData();
+makePhoneDataAvailable();
