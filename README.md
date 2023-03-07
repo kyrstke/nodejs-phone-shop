@@ -1,6 +1,6 @@
 # Node.js Phone Shop
 
-A simple phone shop made with Node.js, Express.js, JSX and Bootstrap. The app is deployed to fly.io and is available at [https://phone-shop.fly.dev/](https://phone-shop.fly.dev/). It uses MongoDB Atlas as a database and sessions to store the cart. Concurrent access is handled by blocking the possibility of buying an unavailable product and notifying the user about it.
+A simple phone shop made with Node.js, Express.js, JSX and Bootstrap. The app is deployed to [fly.io](https://fly.io/) and is available at [https://phone-shop.fly.dev/](https://phone-shop.fly.dev/). It uses MongoDB Atlas as a database and sessions to store the cart. Concurrent access is handled by blocking the possibility of buying an unavailable product and notifying the user about it.
 
 ## Appearance
 
