@@ -6,10 +6,10 @@
   </div>
 <% } %>
 
-<% if(message2) { %>
-  <div style="text-align: center" class="alert alert-<%=message2.type %>">
-    <strong><%= message2.intro %></strong>
-    <span><%= message2.message %></span>
+<% if(additional_message) { %>
+  <div style="text-align: center" class="alert alert-<%=additional_message.type %>">
+    <strong><%= additional_message.intro %></strong>
+    <span><%= additional_message.message %></span>
     <button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
   </div>
 <% } %>

@@ -12,26 +12,85 @@ const iterate = (obj) => {
     })
 }
 
+const add_success_message = (name) => {
+    return {
+        type: 'success',
+        intro: 'Hurray!',
+        message: 'You added ' + name + ' to your cart.'
+    }
+}
+
+const add_danger_message_qty = (name, quantity) => {
+    return {
+        type: 'danger',
+        intro: 'Oops!',
+        message: 'Sorry, you cannot add more than ' + quantity + ' units of ' + name + ' to your cart.'
+    }
+}
+
+const add_danger_message_oos = (name) => {
+    return {
+        type: 'danger',
+        intro: 'Oops!',
+        message: 'Sorry, you cannot add ' + name + ' to your cart because it is out of stock.'
+    }
+}
+
+const remove_success_message = (name) => {
+    return {
+        type: 'success',
+        intro: 'Hurray!',
+        message: 'You removed ' + name + ' from your cart.'
+    }
+}
+
+const remove_danger_message = (name) => {
+    return {
+        type: 'danger',
+        intro: 'Oops!',
+        message: 'Sorry, you cannot remove ' + name + ' from your cart because it is not in your cart.'
+    }
+}
+
+const buy_success_message = (qty, sum) => {
+    return {
+        type: 'success',
+        intro: 'Hurray!',
+        message: 'You bought ' + qty + ' items for a total of ' + sum + 'zł.'
+    }
+}
+
+const buy_danger_message = () => {
+    return {
+        type: 'danger',
+        intro: 'Oops!',
+        message: 'Sorry, you cannot buy anything because your cart is empty.'
+    }
+}
+
+const out_of_stock_message = {
+    type: 'danger',
+    intro: 'Oops!',
+    message: 'It looks like one or more of the items in your cart is no longer in stock.'
+}
+
+
 // GET
 // Homepage
 exports.homePage = async(req, res) => {
     try {
-        let message2 = '';
-        var cart = new Cart(req.session.cart ? req.session.cart : {});
-        for(let item in cart.items) {
+        let additional_message = '';
+        const cart = new Cart(req.session.cart ? req.session.cart : {});
+        for(const item in cart.items) {
             const product = await Phone.find({ _id: item });
-            if (!product[0].in_stock) {
+            if (product[0].quantity === 0) {
                 cart.remove(product[0].id);
-                message2 = {
-                    type: 'danger',
-                    intro: 'Oops!',
-                    message: 'It looks like one or more of the items in your cart are no longer in stock.'
-                }
+                additional_message = out_of_stock_message;
             }
         }
         req.session.cart = cart;
-        const phones = await Phone.find({ in_stock: true });
-        res.render('index', { title: 'Phone Shop - Home', phones, cart, message2 });
+        const phones = await Phone.find({ quantity: { $gt: 0 } });
+        res.render('index', { title: 'Phone Shop - Home', phones, cart, additional_message: additional_message });
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
@@ -42,21 +101,17 @@ exports.homePage = async(req, res) => {
 // Checkout
 exports.checkoutPage = async(req, res) => {
     try {
-        let message2 = '';
-        var cart = new Cart(req.session.cart ? req.session.cart : {});
+        let additional_message = '';
+        const cart = new Cart(req.session.cart ? req.session.cart : {});
         for(let item in cart.items) {
             const product = await Phone.find({ _id: item });
-            if (!product[0].in_stock) {
+            if (product[0].quantity < cart.items[item].qty) {
                 cart.remove(product[0].id);
-                message2 = {
-                    type: 'danger',
-                    intro: 'Oops!',
-                    message: 'It looks like one or more of the items in your cart are no longer in stock.'
-                }
+                additional_message = out_of_stock_message;
             }
         }
         req.session.cart = cart;
-        res.render('checkout', { title: 'Phone Shop - Checkout', cart: req.session.cart, message2: message2 });
+        res.render('checkout', { title: 'Phone Shop - Checkout', cart: req.session.cart, additional_message: additional_message });
     } catch(error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
@@ -67,27 +122,25 @@ exports.checkoutPage = async(req, res) => {
 // Add to cart
 exports.addToCart = async(req, res) => {
     try {
-        var cart = new Cart(req.session.cart ? req.session.cart : {});
+        const cart = new Cart(req.session.cart ? req.session.cart : {});
         const addedProduct = await Phone.find({ _id: req.body.id});
-        if (addedProduct[0].id in cart.items){
-            req.session.message = {
-                type: 'danger',
-                intro: 'Oops!',
-                message: addedProduct[0].name + ' is already in your cart.'
+        if (addedProduct[0].quantity !== 0) {
+            if (addedProduct[0].id in cart.items) {
+                if (cart.items[addedProduct[0].id].qty < addedProduct[0].quantity) {
+                    cart.add(addedProduct[0], addedProduct[0].id);
+                    req.session.message = add_success_message(addedProduct[0].name);
+                }
+                else {
+                    req.session.message = add_danger_message_qty(addedProduct[0].name, addedProduct[0].quantity);
+                }
             }
-        } else if (addedProduct[0].in_stock){
-            cart.add(addedProduct[0], addedProduct[0].id);
-            req.session.message = {
-                type: 'success',
-                intro: 'Hurray!',
-                message: 'You added ' + addedProduct[0].name + ' to your cart.'
+            else {
+                cart.add(addedProduct[0], addedProduct[0].id);
+                req.session.message = add_success_message(addedProduct[0].name);
             }
+            
         } else {
-            req.session.message = {
-                type: 'danger',
-                intro: 'Oops!',
-                message: 'Sorry, ' + addedProduct[0].name + ' is no longer in stock.'
-            }
+            req.session.message = add_danger_message_oos(addedProduct[0].name);
         }
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
@@ -101,7 +154,7 @@ exports.addToCart = async(req, res) => {
 // Remove from cart
 exports.remove = async(req, res) => {
     try {
-        var cart = new Cart(req.session.cart ? req.session.cart : {});
+        const cart = new Cart(req.session.cart ? req.session.cart : {});
         const removedProduct = await Phone.find({ _id: req.body.id });
         if (removedProduct[0].id in cart.items){
             req.session.message = {
@@ -130,7 +183,7 @@ exports.remove = async(req, res) => {
 // Remove all items from cart
 exports.removeAll = async(req, res) => {
     try {
-        var cart = new Cart(req.session.cart ? req.session.cart : {});
+        const cart = new Cart(req.session.cart ? req.session.cart : {});
         for(let item in cart.items) {
             const removedProduct = await Phone.find({ _id: item});
             cart.remove(removedProduct[0].id);
@@ -153,12 +206,12 @@ exports.removeAll = async(req, res) => {
 exports.buy = async(req, res) => {
     try {
         let sum = 0;
-        var cart = new Cart(req.session.cart ? req.session.cart : {});
+        const cart = new Cart(req.session.cart ? req.session.cart : {});
         const qty = cart.totalQty;
         let success = true;
         for(let item in cart.items) {
             const boughtProduct = await Phone.find({ _id: item });
-            if (!boughtProduct[0].in_stock) {
+            if (boughtProduct[0].quantity === 0) {
                 success = false;
                 cart.remove(boughtProduct[0].id);
             }
@@ -169,7 +222,7 @@ exports.buy = async(req, res) => {
                     const boughtProduct = await Phone.find({ _id: item });
                     sum += boughtProduct[0].price;
                     cart.remove(boughtProduct[0].id);
-                    boughtProduct[0].in_stock = false;
+                    boughtProduct[0].quantity--;
                     await boughtProduct[0].save();
                 }
                 req.session.message = {
@@ -205,7 +258,7 @@ exports.buy = async(req, res) => {
 
 async function makePhoneDataAvailable(){
     try {
-        await Phone.updateMany({}, {in_stock: true});
+        await Phone.updateMany({}, {quantity: 10});
     } catch (error) {
         console.log(error)
     }
@@ -218,43 +271,43 @@ async function insertPhoneData(){
                 "name": "iPhone 13 Pro 256GB Grey",
                 "price": 4999,
                 "image": "ip13pro.jpg",
-                "in_stock": true
+                "quantity": 10
             },
             {
                 "name": "iPhone 12 128GB Black",
                 "price": 3699,
                 "image": "ip12.jpg",
-                "in_stock": true
+                "quantity": 50
             },
             {
                 "name": "iPhone 13 256GB Green",
                 "price": 4449,
                 "image": "ip13.jpg",
-                "in_stock": true
+                "quantity": 50
             },
             {
                 "name": "iPhone 11 64GB Black",
                 "price": 2499,
                 "image": "ip11.jpg",
-                "in_stock": true
+                "quantity": 2
             },
             {
                 "name": "iPhone 13 mini 256GB Blue",
                 "price": 3899,
                 "image": "ip13mini.jpg",
-                "in_stock": true
+                "quantity": 50
             },
             {
                 "name": "iPhone 13 256GB Red",
                 "price": 4449,
                 "image": "ip13red.jpg",
-                "in_stock": true
+                "quantity": 100
             },
             {
                 "name": "Xiaomi 12 Pro 12/256GB 120Hz Blue",
                 "price": 5199,
                 "image": "xiaomi12problue.jpg",
-                "in_stock": true
+                "quantity": 24
             }
             ]);
     } catch (error) {
@@ -270,6 +323,6 @@ async function deletePhoneData(){
     }
 }
 
-// deletePhoneData();
-// insertPhoneData();
-makePhoneDataAvailable();
+deletePhoneData();
+insertPhoneData();
+// makePhoneDataAvailable();

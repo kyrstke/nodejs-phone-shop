@@ -13,9 +13,10 @@ const phoneSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    in_stock: {
-        type: Boolean,
-        required: true
+    quantity: {
+        type: Number,
+        required: true,
+        default: 1
     }
 })
 
