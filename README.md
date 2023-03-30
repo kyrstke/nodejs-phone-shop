@@ -1,6 +1,6 @@
 # Node.js Phone Shop
 
-A simple phone shop made with Node.js, Express.js, JSX and Bootstrap. The app uses MongoDB Atlas as a database and sessions to store the cart.
+A simple phone shop made with Node.js, Express.js, EJS and Bootstrap. The app uses MongoDB Atlas as a database and sessions to store the cart.
 
 ## Appearance
 
@@ -31,10 +31,12 @@ You may also see any lint errors in the console.
 
 ## Areas to improve
 
-- fix alerts to always appear immediately (sometimes they appear only after a refresh)
-- add sorting and filtering
-- change in_stock from boolean to integer to store quantity of phones in stock
-- add payment form and payment processing
-- add user authentication and authorization
-- add admin panel
-- don't refresh the page when adding a phone to the cart
+- [] add quantity (there is only one phone per model at the moment)
+- [] add more phones
+- [] fix alerts to always appear immediately (sometimes they appear only after a refresh)
+- [] fix alerts bug (sometimes the message is not displayed)
+- [] add sorting and filtering
+- [] add payment form and payment processing
+- [] add user authentication and authorization
+- [] add admin panel
+- [] remove refreshing the page when adding a phone to the cart
