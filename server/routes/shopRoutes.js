@@ -4,7 +4,7 @@ const shopController = require('../controllers/shopController');
 
 // app routes
 router.get('/', shopController.homePage);
-router.get('/checkout', shopController.checkoutPage);
+router.get('/cart', shopController.checkoutPage);
 router.post('/add-to-cart', shopController.addToCart);
 router.post('/remove', shopController.remove);
 router.post('/remove-all', shopController.removeAll);
