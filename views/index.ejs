@@ -18,16 +18,19 @@
   <% if(phones != '') { %>
     <% phones.forEach(function(phone, index) { %>
       <div class="col">
-        <div class="card shadow-sm">
+        <div class="card shadow">
           <img src="img/<%- phone.image %>" alt="<%- phone.name %>" loading="lazy">
           <div class="card-body">
-            <p class="card-text"><%- phone.name %></p>
+            <div class="d-flex justify-content-between align-items-center my-3">
+              <span class="card-text"><%- phone.name %></span>
+              <span class="card-text">In stock: <%- phone.quantity %></span>
+            </div>
             <div class="d-flex justify-content-between align-items-center">
               <form action="/add-to-cart" method="POST">
                 <input type="hidden" name="id" value="<%=phone.id %>">
-                <button class="btn btn-sm btn-outline-dark">Add to cart</button>
+                <button class="btn btn-sm btn-dark p-2">Add to cart</button>
               </form>
-              <small class="text-dark"><%- phone.price %> zł</small>
+              <span class="text-dark"><%- phone.price %> zł</span>
             </div>
           </div>
         </div>

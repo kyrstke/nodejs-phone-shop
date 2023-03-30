@@ -20,15 +20,15 @@ const add_success_message = (name) => {
     }
 }
 
-const add_danger_message_qty = (name, quantity) => {
+const add_low_qty_msg = (name, quantity) => {
     return {
         type: 'danger',
         intro: 'Oops!',
-        message: 'Sorry, you cannot add more than ' + quantity + ' units of ' + name + ' to your cart.'
+        message: 'Sorry, there is only ' + quantity + ' units of ' + name + ' available.'
     }
 }
 
-const add_danger_message_oos = (name) => {
+const add_out_of_stock_msg = (name) => {
     return {
         type: 'danger',
         intro: 'Oops!',
@@ -44,7 +44,7 @@ const remove_success_message = (name) => {
     }
 }
 
-const remove_danger_message = (name) => {
+const remove_fail_message = (name) => {
     return {
         type: 'danger',
         intro: 'Oops!',
@@ -52,15 +52,16 @@ const remove_danger_message = (name) => {
     }
 }
 
-const buy_success_message = (qty, sum) => {
+const successful_purchase_msg = (qty, sum) => {
+    let plural = qty > 1 ? 's' : '';
     return {
         type: 'success',
         intro: 'Hurray!',
-        message: 'You bought ' + qty + ' items for a total of ' + sum + 'zł.'
+        message: `You bought ${qty} phone${plural} for a total of ${sum} zł.`
     }
 }
 
-const buy_danger_message = () => {
+const empty_cart_msg = () => {
     return {
         type: 'danger',
         intro: 'Oops!',
@@ -68,61 +69,84 @@ const buy_danger_message = () => {
     }
 }
 
-const out_of_stock_message = {
-    type: 'danger',
-    intro: 'Oops!',
-    message: 'It looks like one or more of the items in your cart is no longer in stock.'
+const out_of_stock_msg = (products) => {
+    if (products.length === 1) {
+        return {
+            type: 'danger',
+            intro: 'Oops!',
+            message: 'Sorry, you cannot buy ' + products[0] + ' because it is out of stock.'
+        }
+    } else {
+        let message = 'Sorry, you cannot buy ';
+        for (let i = 0; i < products.length; i++) {
+            if (i === products.length - 1) {
+                message = message.slice(0, -2);
+                message += ' and ' + products[i] + ' because they are out of stock.';
+            } else {
+                message += products[i] + ', ';
+            }
+        }
+        return {
+            type: 'danger',
+            intro: 'Oops!',
+            message: message
+        }
+    }
 }
 
 
 // GET
 // Homepage
 exports.homePage = async(req, res) => {
+    const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
         let additional_message = '';
-        const cart = new Cart(req.session.cart ? req.session.cart : {});
         for(const item in cart.items) {
             const product = await Phone.find({ _id: item });
             if (product[0].quantity === 0) {
                 cart.remove(product[0].id);
-                additional_message = out_of_stock_message;
+                additional_message = out_of_stock_msg;
             }
         }
         req.session.cart = cart;
         const phones = await Phone.find({ quantity: { $gt: 0 } });
         res.render('index', { title: 'Phone Shop - Home', phones, cart, additional_message: additional_message });
+        return;
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
+        return;
     }
 }
 
 // GET
 // Checkout
 exports.checkoutPage = async(req, res) => {
+    const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
         let additional_message = '';
-        const cart = new Cart(req.session.cart ? req.session.cart : {});
         for(let item in cart.items) {
             const product = await Phone.find({ _id: item });
             if (product[0].quantity < cart.items[item].qty) {
                 cart.remove(product[0].id);
-                additional_message = out_of_stock_message;
+                additional_message = out_of_stock_msg;
             }
         }
         req.session.cart = cart;
-        res.render('checkout', { title: 'Phone Shop - Checkout', cart: req.session.cart, additional_message: additional_message });
+        res.render('cart', { title: 'Phone Shop - Cart', cart: req.session.cart, additional_message: additional_message });
+        return;
     } catch(error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
+        return;
     }
 }
 
 // POST
 // Add to cart
 exports.addToCart = async(req, res) => {
+    const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        const cart = new Cart(req.session.cart ? req.session.cart : {});
         const addedProduct = await Phone.find({ _id: req.body.id});
         if (addedProduct[0].quantity !== 0) {
             if (addedProduct[0].id in cart.items) {
@@ -131,7 +155,7 @@ exports.addToCart = async(req, res) => {
                     req.session.message = add_success_message(addedProduct[0].name);
                 }
                 else {
-                    req.session.message = add_danger_message_qty(addedProduct[0].name, addedProduct[0].quantity);
+                    req.session.message = add_low_qty_msg(addedProduct[0].name, addedProduct[0].quantity);
                 }
             }
             else {
@@ -140,50 +164,46 @@ exports.addToCart = async(req, res) => {
             }
             
         } else {
-            req.session.message = add_danger_message_oos(addedProduct[0].name);
+            req.session.message = add_out_of_stock_msg(addedProduct[0].name);
         }
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
+        return;
     }
     req.session.cart = cart;
     res.redirect('/');
+    return;
 }
 
 // POST
 // Remove from cart
 exports.remove = async(req, res) => {
+    const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        const cart = new Cart(req.session.cart ? req.session.cart : {});
         const removedProduct = await Phone.find({ _id: req.body.id });
         if (removedProduct[0].id in cart.items){
-            req.session.message = {
-                type: 'info',
-                intro: '',
-                message: 'You removed ' + removedProduct[0].name + ' from your cart.'
-            }
+            req.session.message = remove_success_message(removedProduct[0].name);
             cart.remove(removedProduct[0].id);
         } else {
-            req.session.message = {
-                type: 'danger',
-                intro: 'Oops!',
-                message: removedProduct[0].name + ' is not in your cart.'
-            }
+            req.session.message = remove_fail_message(removedProduct[0].name);
         }
     }
     catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
+        return;
     }
     req.session.cart = cart;
     res.redirect('/checkout');
+    return;
 }
 
 // POST
 // Remove all items from cart
 exports.removeAll = async(req, res) => {
+    const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        const cart = new Cart(req.session.cart ? req.session.cart : {});
         for(let item in cart.items) {
             const removedProduct = await Phone.find({ _id: item});
             cart.remove(removedProduct[0].id);
@@ -196,71 +216,69 @@ exports.removeAll = async(req, res) => {
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
+        return;
     }
     req.session.cart = cart;
     res.redirect('/checkout');
+    return;
 }
 
 // POST
 // Buy
 exports.buy = async(req, res) => {
+    const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
         let sum = 0;
-        const cart = new Cart(req.session.cart ? req.session.cart : {});
         const qty = cart.totalQty;
-        let success = true;
-        for(let item in cart.items) {
-            const boughtProduct = await Phone.find({ _id: item });
-            if (boughtProduct[0].quantity === 0) {
-                success = false;
-                cart.remove(boughtProduct[0].id);
+        const out_of_stock_products = [];
+        // Check if there are enough products in stock
+        for(const item in cart.items) {
+            const product = await Phone.find({ _id: item });
+            if (product[0].quantity < cart.items[item].qty) {
+                out_of_stock_products.push(product[0].name);
+                cart.remove(product[0].id);
             }
         }
-        if(success) {
-            if(qty !== 0) {
-                for(let item in cart.items) {
-                    const boughtProduct = await Phone.find({ _id: item });
-                    sum += boughtProduct[0].price;
-                    cart.remove(boughtProduct[0].id);
-                    boughtProduct[0].quantity--;
-                    await boughtProduct[0].save();
-                }
-                req.session.message = {
-                    type: 'success',
-                    intro: 'Success!',
-                    message: 'You bought ' + qty + ' phone(s) for ' + sum + ' zł.'
-                }
-                req.session.cart = cart;
-                res.redirect('/');
-            } else {
-                req.session.message = {
-                    type: 'danger',
-                    intro: 'Oops!',
-                    message: 'You did not buy anything.'
-                }
-                res.redirect('/checkout');
-            }
-            
-        } else {
-            req.session.message = {
-                type: 'danger',
-                intro: 'Oops!',
-                message: 'One or more of the products you selected are no longer in stock.'
-            }
+        if (out_of_stock_products.length > 0) {
+            req.session.message = out_of_stock_msg(out_of_stock_products);
             req.session.cart = cart;
             res.redirect('/checkout');
+            return;
         }
+        if(qty === 0) {
+            req.session.message = empty_cart_msg;
+            res.redirect('/checkout');
+            return;
+        } else {
+            for(let item in cart.items) {
+                const boughtProduct = await Phone.find({ _id: item });
+                sum += boughtProduct[0].price;
+                cart.remove(boughtProduct[0].id);
+                boughtProduct[0].quantity -= cart.items[item].qty;
+                await boughtProduct[0].save();
+            }
+            req.session.message = successful_purchase_msg(qty, sum);
+            req.session.cart = cart;
+            res.redirect('/');
+            return;
+        }           
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
         console.log(error);
+        return;
     }
 }
 
 async function makePhoneDataAvailable(){
     try {
-        await Phone.updateMany({}, {quantity: 10});
+        await Phone.updateMany({}, {
+            quantity: 1,
+            in_stock: true
+        });
+        console.log('Phone data available');
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        console.log('Phone data not available');
     }
 }
 
@@ -271,58 +289,71 @@ async function insertPhoneData(){
                 "name": "iPhone 13 Pro 256GB Grey",
                 "price": 4999,
                 "image": "ip13pro.jpg",
-                "quantity": 10
+                "in_stock": true,
+                "quantity": 1,
             },
             {
                 "name": "iPhone 12 128GB Black",
                 "price": 3699,
                 "image": "ip12.jpg",
-                "quantity": 50
+                "in_stock": true,
+                "quantity": 1,
             },
             {
                 "name": "iPhone 13 256GB Green",
                 "price": 4449,
                 "image": "ip13.jpg",
-                "quantity": 50
+                "in_stock": true,
+                "quantity": 1,
             },
             {
                 "name": "iPhone 11 64GB Black",
                 "price": 2499,
                 "image": "ip11.jpg",
-                "quantity": 2
+                "in_stock": true,
+                "quantity": 1,
             },
             {
                 "name": "iPhone 13 mini 256GB Blue",
                 "price": 3899,
                 "image": "ip13mini.jpg",
-                "quantity": 50
+                "in_stock": true,
+                "quantity": 1,
             },
             {
                 "name": "iPhone 13 256GB Red",
                 "price": 4449,
                 "image": "ip13red.jpg",
-                "quantity": 100
+                "in_stock": true,
+                "quantity": 1,
             },
             {
                 "name": "Xiaomi 12 Pro 12/256GB 120Hz Blue",
                 "price": 5199,
                 "image": "xiaomi12problue.jpg",
-                "quantity": 24
-            }
-            ]);
+                "quantity": 1,
+                "in_stock": true,
+            },
+        ]);
+        console.log("Inserted phone data");
+        const phones = await Phone.find({ quantity: { $gt: 0 } });
+        console.log(phones);
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        console.log("Error occured while inserting phone data");
     }
 }
 
 async function deletePhoneData(){
     try {
         await Phone.deleteMany({});
+        console.log("Deleted all phone data");
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        console.log("Error occured while deleting phone data");
     }
 }
 
 deletePhoneData();
-insertPhoneData();
+setTimeout(insertPhoneData, 1000);
 // makePhoneDataAvailable();
