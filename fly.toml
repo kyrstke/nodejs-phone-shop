@@ -1,4 +1,4 @@
-# fly.toml file generated for phone-shop on 2023-03-29T14:35:29+02:00
+# fly.toml file generated for phone-shop on 2023-03-31T12:44:04+02:00
 
 app = "phone-shop"
 primary_region = "waw"
