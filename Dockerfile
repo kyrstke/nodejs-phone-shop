@@ -1,30 +1,15 @@
-FROM debian:bullseye as builder
+FROM node:18-slim
 
-ENV PATH=/usr/local/node/bin:$PATH
-ARG NODE_VERSION=18.9.0
+# the image comes with a node user:
+USER node
 
-RUN apt-get update; apt install -y curl python-is-python3 pkg-config build-essential && \
-    curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
-    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
-rm -rf /tmp/node-build-master
+RUN mkdir -p /home/node/app
+WORKDIR /home/node/app
 
-RUN mkdir /app
-WORKDIR /app
+COPY --chown=node:node package.json .
+COPY --chown=node:node package-lock.json .
+RUN npm ci --only=production
 
-COPY . .
+COPY --chown=node:node . .
 
-RUN npm install
-
-
-FROM debian:bullseye-slim
-
-LABEL fly_launch_runtime="nodejs"
-
-COPY --from=builder /usr/local/node /usr/local/node
-COPY --from=builder /app /app
-
-WORKDIR /app
-ENV NODE_ENV production
-ENV PATH /usr/local/node/bin:$PATH
-
-CMD [ "npm", "run", "start" ]
+CMD ["node","app.js"]

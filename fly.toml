@@ -1,7 +1,31 @@
-# fly.toml file generated for phone-shop on 2023-03-29T14:35:29+02:00
+# fly.toml file generated for phone-shop on 2023-04-01T14:30:07+02:00
 
 app = "phone-shop"
 primary_region = "waw"
 
 [env]
-  PORT = "8080"
+  NODE_ENV = "production"
+  PORT = 8080
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+  [services.concurrency]
+    hard_limit = 50
+    soft_limit = 25
+
+  [[services.http_checks]]
+    interval = "5s"
+    method = "get"
+    path = "/"
+    protocol = "http"
+    timeout = "2s"
+    tls_skip_verify = true
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    interval = "5s"
+    timeout = "2s"
