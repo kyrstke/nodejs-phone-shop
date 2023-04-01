@@ -31,12 +31,12 @@ You may also see any lint errors in the console.
 
 ## Areas to improve
 
-- [] add quantity (there is only one phone per model at the moment)
-- [] add more phones
-- [] fix alerts to always appear immediately (sometimes they appear only after a refresh)
-- [] fix alerts bug (sometimes the message is not displayed)
-- [] add sorting and filtering
-- [] add payment form and payment processing
-- [] add user authentication and authorization
-- [] add admin panel
-- [] remove refreshing the page when adding a phone to the cart
+- [x] change in_stock (boolean) field of Phone model to quantity (number)
+- [ ] add more phones
+- [ ] fix alerts to always appear immediately (sometimes they appear only after a refresh)
+- [ ] fix alerts bug (sometimes the message is not displayed)
+- [ ] add sorting and filtering
+- [ ] add payment form and payment processing
+- [ ] add user authentication and authorization
+- [ ] add admin panel
+- [ ] no refresh when adding to cart
