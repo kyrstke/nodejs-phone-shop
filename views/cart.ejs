@@ -30,11 +30,11 @@
     
       <li class="list-group-item d-flex justify-content-between lh-sm">
         <div>
-          <span class="my-0"><%- cart.items[item].name %></span>
+          <span class="my-0"><%- cart.items[item].item.name %></span>
         </div>
         <div class="d-flex">
           <form action="/remove" method="POST" class="mx-2">
-            <input type="hidden" name="id" value="<%=cart.items[item]._id %>">
+            <input type="hidden" name="id" value="<%=item %>">
             <button class="btn btn-outline-danger btn-sm" style="font-size: 0.8em;">Remove</button>
           </form>
           <span class="text-muted"><%- cart.items[item].price %> zł</span>
