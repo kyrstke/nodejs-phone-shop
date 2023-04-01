@@ -1,6 +1,6 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
-const dotenv = require('dotenv');
+require('dotenv').config();
 const morgan = require('morgan');
 const connectDB = require('./server/models/db');
 const session = require('express-session');
@@ -11,7 +11,7 @@ const MongoStore = require('connect-mongo')(session);
 const { default: mongoose } = require('mongoose');
 const process = require('process');
 
-dotenv.config( {path: './config/config.env'} );
+// dotenv.config( {path: './config/config.env'} );
 
 connectDB();
 

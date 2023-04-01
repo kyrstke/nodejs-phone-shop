@@ -355,6 +355,6 @@ async function deletePhoneData(){
     }
 }
 
-// deletePhoneData();
-// setTimeout(insertPhoneData, 1000);
+deletePhoneData();
+setTimeout(insertPhoneData, 1000);
 // makePhoneDataAvailable();
