@@ -9,10 +9,11 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const MongoStore = require('connect-mongo')(session);
 const { default: mongoose } = require('mongoose');
+const process = require('process');
 
 dotenv.config( {path: './config/config.env'} );
 
-db = connectDB();
+connectDB();
 
 const app = express();
 
@@ -70,9 +71,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // listen on port 3000
-const PORT = process.env.PORT || 8080;
+const port = process.env.PORT || 8080;
 app.listen(
-    port=PORT,
-    hostname="0.0.0.0",
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+    port, () => {
+        console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
+    }
 );

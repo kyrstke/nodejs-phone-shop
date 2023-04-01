@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 require('../models/db');
 const session = require('express-session');
 const Cart = require('../models/Cart');
@@ -253,8 +254,8 @@ exports.buy = async(req, res) => {
             for(let item in cart.items) {
                 const boughtProduct = await Phone.find({ _id: item });
                 sum += boughtProduct[0].price;
-                cart.remove(boughtProduct[0].id);
                 boughtProduct[0].quantity -= cart.items[item].qty;
+                cart.remove(boughtProduct[0].id);
                 await boughtProduct[0].save();
             }
             req.session.message = successful_purchase_msg(qty, sum);
@@ -290,54 +291,54 @@ async function insertPhoneData(){
                 "price": 4999,
                 "image": "ip13pro.jpg",
                 "in_stock": true,
-                "quantity": 1,
+                "quantity": 3,
             },
             {
                 "name": "iPhone 12 128GB Black",
                 "price": 3699,
                 "image": "ip12.jpg",
                 "in_stock": true,
-                "quantity": 1,
+                "quantity": 3,
             },
             {
                 "name": "iPhone 13 256GB Green",
                 "price": 4449,
                 "image": "ip13.jpg",
                 "in_stock": true,
-                "quantity": 1,
+                "quantity": 3,
             },
             {
                 "name": "iPhone 11 64GB Black",
                 "price": 2499,
                 "image": "ip11.jpg",
                 "in_stock": true,
-                "quantity": 1,
+                "quantity": 3,
             },
             {
                 "name": "iPhone 13 mini 256GB Blue",
                 "price": 3899,
                 "image": "ip13mini.jpg",
                 "in_stock": true,
-                "quantity": 1,
+                "quantity": 3,
             },
             {
                 "name": "iPhone 13 256GB Red",
                 "price": 4449,
                 "image": "ip13red.jpg",
                 "in_stock": true,
-                "quantity": 1,
+                "quantity": 3,
             },
             {
                 "name": "Xiaomi 12 Pro 12/256GB 120Hz Blue",
                 "price": 5199,
                 "image": "xiaomi12problue.jpg",
-                "quantity": 1,
+                "quantity": 3,
                 "in_stock": true,
             },
         ]);
         console.log("Inserted phone data");
-        const phones = await Phone.find({ quantity: { $gt: 0 } });
-        console.log(phones);
+        // const phones = await Phone.find({ quantity: { $gt: 0 } });
+        // console.log(phones);
     } catch (error) {
         console.log(error);
         console.log("Error occured while inserting phone data");
@@ -354,6 +355,6 @@ async function deletePhoneData(){
     }
 }
 
-deletePhoneData();
-setTimeout(insertPhoneData, 1000);
+// deletePhoneData();
+// setTimeout(insertPhoneData, 1000);
 // makePhoneDataAvailable();
