@@ -6,14 +6,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # This step checks out a copy of your repository.
-      - uses: actions/checkout@v3
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: flyctl setup
+        uses: superfly/flyctl-actions/setup-flyctl@master
       - name: create env file
         run: |
           touch .env
           echo MONGO_URI=${{ secrets.MONGO_URI }} >> .env
-
-      - run: flyctl deploy --remote-only
+      - name: deploy
+        run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
