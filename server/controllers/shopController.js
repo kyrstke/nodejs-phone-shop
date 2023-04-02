@@ -103,9 +103,9 @@ exports.homePage = async(req, res) => {
     try {
         let additional_message = '';
         for(const item in cart.items) {
-            const product = await Phone.find({ _id: item });
-            if (product[0].quantity === 0) {
-                cart.remove(product[0].id);
+            const product = await Phone.find({ _id: item })[0];
+            if (product.quantity === 0) {
+                cart.remove(product.id);
                 additional_message = out_of_stock_msg;
             }
         }
@@ -127,9 +127,9 @@ exports.checkoutPage = async(req, res) => {
     try {
         let additional_message = '';
         for(let item in cart.items) {
-            const product = await Phone.find({ _id: item });
-            if (product[0].quantity < cart.items[item].qty) {
-                cart.remove(product[0].id);
+            const product = await Phone.find({ _id: item })[0];
+            if (product.quantity < cart.items[item].qty) {
+                cart.remove(product.id);
                 additional_message = out_of_stock_msg;
             }
         }
@@ -148,24 +148,24 @@ exports.checkoutPage = async(req, res) => {
 exports.addToCart = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        const addedProduct = await Phone.find({ _id: req.body.id});
-        if (addedProduct[0].quantity !== 0) {
-            if (addedProduct[0].id in cart.items) {
-                if (cart.items[addedProduct[0].id].qty < addedProduct[0].quantity) {
-                    cart.add(addedProduct[0], addedProduct[0].id);
-                    req.session.message = add_success_message(addedProduct[0].name);
+        const addedProduct = await Phone.find({ _id: req.body.id})[0];
+        if (addedProduct.quantity !== 0) {
+            if (addedProduct.id in cart.items) {
+                if (cart.items[addedProduct.id].qty < addedProduct.quantity) {
+                    cart.add(addedProduct, addedProduct.id);
+                    req.session.message = add_success_message(addedProduct.name);
                 }
                 else {
-                    req.session.message = add_low_qty_msg(addedProduct[0].name, addedProduct[0].quantity);
+                    req.session.message = add_low_qty_msg(addedProduct.name, addedProduct.quantity);
                 }
             }
             else {
-                cart.add(addedProduct[0], addedProduct[0].id);
-                req.session.message = add_success_message(addedProduct[0].name);
+                cart.add(addedProduct, addedProduct.id);
+                req.session.message = add_success_message(addedProduct.name);
             }
             
         } else {
-            req.session.message = add_out_of_stock_msg(addedProduct[0].name);
+            req.session.message = add_out_of_stock_msg(addedProduct.name);
         }
     } catch (error) {
         res.status(500).send({ message: error.message || "Error Occured" });
@@ -182,12 +182,12 @@ exports.addToCart = async(req, res) => {
 exports.remove = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        const removedProduct = await Phone.find({ _id: req.body.id });
-        if (removedProduct[0].id in cart.items){
-            req.session.message = remove_success_message(removedProduct[0].name);
-            cart.remove(removedProduct[0].id);
+        const removedProduct = await Phone.find({ _id: req.body.id })[0];
+        if (removedProduct.id in cart.items){
+            req.session.message = remove_success_message(removedProduct.name);
+            cart.remove(removedProduct.id);
         } else {
-            req.session.message = remove_fail_message(removedProduct[0].name);
+            req.session.message = remove_fail_message(removedProduct.name);
         }
     }
     catch (error) {
@@ -206,8 +206,8 @@ exports.removeAll = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
         for(let item in cart.items) {
-            const removedProduct = await Phone.find({ _id: item});
-            cart.remove(removedProduct[0].id);
+            const removedProduct = await Phone.find({ _id: item})[0];
+            cart.remove(removedProduct.id);
         }
         req.session.message = {
             type: 'info',
@@ -234,10 +234,10 @@ exports.buy = async(req, res) => {
         const out_of_stock_products = [];
         // Check if there are enough products in stock
         for(const item in cart.items) {
-            const product = await Phone.find({ _id: item });
-            if (product[0].quantity < cart.items[item].qty) {
-                out_of_stock_products.push(product[0].name);
-                cart.remove(product[0].id);
+            const product = await Phone.find({ _id: item })[0];
+            if (product.quantity < cart.items[item].qty) {
+                out_of_stock_products.push(product.name);
+                cart.remove(product.id);
             }
         }
         if (out_of_stock_products.length > 0) {
@@ -252,11 +252,11 @@ exports.buy = async(req, res) => {
             return;
         } else {
             for(let item in cart.items) {
-                const boughtProduct = await Phone.find({ _id: item });
-                sum += boughtProduct[0].price;
-                boughtProduct[0].quantity -= cart.items[item].qty;
-                cart.remove(boughtProduct[0].id);
-                await boughtProduct[0].save();
+                const boughtProduct = await Phone.find({ _id: item })[0];
+                sum += boughtProduct.price;
+                boughtProduct.quantity -= cart.items[item].qty;
+                cart.remove(boughtProduct.id);
+                await boughtProduct.save();
             }
             req.session.message = successful_purchase_msg(qty, sum);
             req.session.cart = cart;
@@ -291,7 +291,7 @@ async function insertPhoneData(){
                 "price": 4999,
                 "image": "ip13pro.jpg",
                 "in_stock": true,
-                "quantity": 3,
+                "quantity": 10,
             },
             {
                 "name": "iPhone 12 128GB Black",
@@ -305,34 +305,34 @@ async function insertPhoneData(){
                 "price": 4449,
                 "image": "ip13.jpg",
                 "in_stock": true,
-                "quantity": 3,
+                "quantity": 7,
             },
             {
                 "name": "iPhone 11 64GB Black",
                 "price": 2499,
                 "image": "ip11.jpg",
                 "in_stock": true,
-                "quantity": 3,
+                "quantity": 48,
             },
             {
                 "name": "iPhone 13 mini 256GB Blue",
                 "price": 3899,
                 "image": "ip13mini.jpg",
                 "in_stock": true,
-                "quantity": 3,
+                "quantity": 11,
             },
             {
                 "name": "iPhone 13 256GB Red",
                 "price": 4449,
                 "image": "ip13red.jpg",
                 "in_stock": true,
-                "quantity": 3,
+                "quantity": 99,
             },
             {
                 "name": "Xiaomi 12 Pro 12/256GB 120Hz Blue",
                 "price": 5199,
                 "image": "xiaomi12problue.jpg",
-                "quantity": 3,
+                "quantity": 6,
                 "in_stock": true,
             },
         ]);
@@ -355,6 +355,6 @@ async function deletePhoneData(){
     }
 }
 
-deletePhoneData();
-setTimeout(insertPhoneData, 1000);
+// deletePhoneData();
+// setTimeout(insertPhoneData, 1000);
 // makePhoneDataAvailable();
