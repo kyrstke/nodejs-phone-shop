@@ -102,8 +102,8 @@ exports.homePage = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
         let additional_message = '';
-        for(const item in cart.items) {
-            const product = await Phone.find({ _id: item })[0];
+        for(const item_id in cart.items) {
+            const product = await Phone.findById(item_id);
             if (product.quantity === 0) {
                 cart.remove(product.id);
                 additional_message = out_of_stock_msg;
@@ -126,9 +126,9 @@ exports.checkoutPage = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
         let additional_message = '';
-        for(let item in cart.items) {
-            const product = await Phone.find({ _id: item })[0];
-            if (product.quantity < cart.items[item].qty) {
+        for(const item_id in cart.items) {
+            const product = await Phone.findById(item_id);
+            if (product.quantity < cart.items[item_id].qty) {
                 cart.remove(product.id);
                 additional_message = out_of_stock_msg;
             }
@@ -147,8 +147,9 @@ exports.checkoutPage = async(req, res) => {
 // Add to cart
 exports.addToCart = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
+    const addedProduct = await Phone.findById(req.body.id);
+    console.log(addedProduct)
     try {
-        const addedProduct = await Phone.find({ _id: req.body.id})[0];
         if (addedProduct.quantity !== 0) {
             if (addedProduct.id in cart.items) {
                 if (cart.items[addedProduct.id].qty < addedProduct.quantity) {
@@ -182,7 +183,7 @@ exports.addToCart = async(req, res) => {
 exports.remove = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        const removedProduct = await Phone.find({ _id: req.body.id })[0];
+        const removedProduct = await Phone.findById(req.body.id);
         if (removedProduct.id in cart.items){
             req.session.message = remove_success_message(removedProduct.name);
             cart.remove(removedProduct.id);
@@ -205,8 +206,8 @@ exports.remove = async(req, res) => {
 exports.removeAll = async(req, res) => {
     const cart = new Cart(req.session.cart ? req.session.cart : {});
     try {
-        for(let item in cart.items) {
-            const removedProduct = await Phone.find({ _id: item})[0];
+        for(const item_id in cart.items) {
+            const removedProduct = await Phone.findById(item_id);
             cart.remove(removedProduct.id);
         }
         req.session.message = {
@@ -233,9 +234,9 @@ exports.buy = async(req, res) => {
         const qty = cart.totalQty;
         const out_of_stock_products = [];
         // Check if there are enough products in stock
-        for(const item in cart.items) {
-            const product = await Phone.find({ _id: item })[0];
-            if (product.quantity < cart.items[item].qty) {
+        for(const item_id in cart.items) {
+            const product = await Phone.findById(item_id);
+            if (product.quantity < cart.items[item_id].qty) {
                 out_of_stock_products.push(product.name);
                 cart.remove(product.id);
             }
@@ -251,10 +252,10 @@ exports.buy = async(req, res) => {
             res.redirect('/checkout');
             return;
         } else {
-            for(let item in cart.items) {
-                const boughtProduct = await Phone.find({ _id: item })[0];
+            for(const item_id in cart.items) {
+                const boughtProduct = await Phone.findById(item_id);
                 sum += boughtProduct.price;
-                boughtProduct.quantity -= cart.items[item].qty;
+                boughtProduct.quantity -= cart.items[item_id].qty;
                 cart.remove(boughtProduct.id);
                 await boughtProduct.save();
             }
